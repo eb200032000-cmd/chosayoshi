@@ -1,0 +1,886 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head><body>
+<title>かんしょ調査野帳</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+:root{
+  --bg:#F6F3F5; --surface:#FFFFFF; --sunk:#EFEAEE; --ink:#231B24; --muted:#6C6270; --line:#E0D8DE;
+  --accent:#8A2F4E; --accent-ink:#FFFFFF; --accent-soft:#F3E3E9; --flesh:#E2A532; --flesh-soft:#FBF0D8;
+  --p0:#8A2F4E; --p1:#56704B; --p2:#B8720F; --p3:#3C6A8C; --p4:#6B4E9A;
+  --good:#2F7A4A; --warn:#A5610B; --bad:#B3261E;
+  --radius:10px; --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  --sans:"BIZ UDPGothic","Hiragino Kaku Gothic ProN","Yu Gothic UI",Meiryo,system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#16121A; --surface:#211B25; --sunk:#1B161F; --ink:#F0EBF1; --muted:#A99FAD; --line:#382F3D;
+    --accent:#D96F94; --accent-ink:#1A1014; --accent-soft:#3A2230; --flesh:#EDBB55; --flesh-soft:#3A2F17;
+    --p0:#D96F94; --p1:#9DBA8C; --p2:#E3A546; --p3:#7FB0D6; --p4:#B69BE0;
+    --good:#6CC08A; --warn:#E7A64A; --bad:#F08A80;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#16121A; --surface:#211B25; --sunk:#1B161F; --ink:#F0EBF1; --muted:#A99FAD; --line:#382F3D;
+  --accent:#D96F94; --accent-ink:#1A1014; --accent-soft:#3A2230; --flesh:#EDBB55; --flesh-soft:#3A2F17;
+  --p0:#D96F94; --p1:#9DBA8C; --p2:#E3A546; --p3:#7FB0D6; --p4:#B69BE0;
+  --good:#6CC08A; --warn:#E7A64A; --bad:#F08A80;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.6;-webkit-text-size-adjust:100%}
+button,input,select,textarea{font:inherit;color:inherit}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.wrap{max-width:880px;margin:0 auto;padding-inline:16px;padding-block:0 64px}
+
+/* header */
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:10;background:var(--bg);border-bottom:1px solid var(--line)}
+.top-inner{max-width:880px;margin:0 auto;padding-inline:16px;padding-block:10px 0}
+.brand{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.brand h1{font-size:13px;font-weight:700;letter-spacing:.12em;color:var(--accent);margin:0}
+.brand .trial{font-size:16px;font-weight:700;margin:0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+nav.tabs{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;margin-top:6px}
+nav.tabs::-webkit-scrollbar{display:none}
+nav.tabs button{flex:0 0 auto;background:none;border:0;padding:10px 12px;font-weight:700;color:var(--muted);border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap}
+nav.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+nav.tabs button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+
+section.panel{padding-top:18px;display:grid;gap:18px}
+h2{font-size:18px;margin:0;text-wrap:balance}
+h3{font-size:15px;margin:0}
+.sub{color:var(--muted);font-size:13px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+label.f{display:grid;gap:4px;font-size:13px;color:var(--muted);font-weight:700}
+label.f input,label.f select,label.f textarea{font-weight:400;color:var(--ink)}
+input[type=text],input[type=number],input[type=date],select,textarea{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:9px 10px;width:100%;min-width:0}
+input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 14px;font-weight:700;cursor:pointer;min-height:40px}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.danger{color:var(--bad)}
+.btn.armed{background:var(--bad);border-color:var(--bad);color:#fff}
+.btn.small{min-height:32px;padding:4px 10px;font-size:13px}
+.btn:disabled{opacity:.45;cursor:default}
+
+/* plot segmented */
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:6px}
+.seg button{border:2px solid var(--line);background:var(--surface);border-radius:10px;padding:10px 8px;font-weight:700;cursor:pointer;display:grid;gap:2px;text-align:left;min-width:0}
+.seg button .n{font-size:12px;color:var(--muted);font-weight:400}
+.seg button[aria-pressed="true"]{border-color:var(--pc);box-shadow:inset 0 0 0 1px var(--pc)}
+.seg button .nm{display:flex;align-items:center;gap:6px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--pc);flex:0 0 auto}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chips button{min-width:44px;min-height:40px;border:1px solid var(--line);background:var(--surface);border-radius:20px;padding:4px 12px;cursor:pointer;font-weight:700}
+.chips button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chips button .c{font-weight:400;font-size:11px;opacity:.75;margin-left:4px}
+
+/* entry */
+.entry{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:stretch}
+.entry input{font-family:var(--mono);font-size:30px;padding:10px 14px;text-align:right;border-width:2px;border-radius:12px}
+.entry .unit{position:relative}
+.entry .unit::after{content:"g";position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--muted);font-family:var(--mono);font-size:18px;pointer-events:none}
+.entry .unit input{padding-right:36px}
+.entry .btn{font-size:17px;padding:0 22px;border-radius:12px}
+.last{min-height:28px;font-size:14px;color:var(--muted)}
+.last b{color:var(--ink)}
+.gpill{display:inline-block;min-width:3.2em;text-align:center;font-family:var(--mono);font-weight:600;font-size:12px;padding:1px 6px;border-radius:6px;background:var(--flesh-soft);color:var(--ink);border:1px solid color-mix(in srgb,var(--flesh) 55%,transparent)}
+.gpill.out{background:var(--sunk);border-color:var(--line);color:var(--muted)}
+
+.tally{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.tally div{background:var(--sunk);border-radius:8px;padding:6px 2px;text-align:center;display:grid}
+.tally .k{font-size:11px;color:var(--muted);font-weight:700}
+.tally .v{font-family:var(--mono);font-size:18px;font-weight:600}
+.tally .r{font-size:10px;color:var(--muted)}
+
+.list{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;max-height:420px;overflow:auto;padding:2px}
+.it{display:grid;grid-template-columns:auto 1fr auto auto;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:4px 4px 4px 8px;font-size:13px}
+.it .no{color:var(--muted);font-family:var(--mono);font-size:11px}
+.it .w{font-family:var(--mono);font-weight:600;text-align:right;background:none;border:0;padding:2px;cursor:text;border-radius:4px}
+.it .w:hover{background:var(--sunk)}
+.it .x{border:0;background:none;color:var(--muted);cursor:pointer;width:28px;height:28px;border-radius:6px;font-size:16px}
+.it .x:hover{background:var(--sunk);color:var(--bad)}
+.it input.ed{width:70px;padding:2px 4px;font-family:var(--mono);text-align:right}
+.it .hl{font-size:10px;color:var(--muted)}
+
+/* tables */
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th{font-size:12px;color:var(--muted);font-weight:700;background:var(--sunk)}
+th:first-child,td:first-child{text-align:left}
+td.num,.num{font-variant-numeric:tabular-nums}
+tr.total td{font-weight:700;border-top:2px solid var(--ink)}
+tr:last-child td{border-bottom:0}
+.phead{display:flex;align-items:center;gap:6px;justify-content:flex-end}
+.range{color:var(--muted);font-size:12px}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:12px}
+.stat .lb{font-size:12px;color:var(--muted);font-weight:700}
+.stat .vals{display:grid;gap:2px;margin-top:4px}
+.stat .vals div{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.stat .vals .pn{font-size:12px;display:flex;align-items:center;gap:5px;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.stat .vals .pv{font-family:var(--mono);font-weight:600;font-size:16px;white-space:nowrap}
+
+/* chart */
+.chart{display:grid;gap:10px}
+.crow{display:grid;grid-template-columns:52px 1fr;gap:8px;align-items:center}
+.crow .k{font-weight:700;font-size:13px}
+.bars{display:grid;gap:3px;position:relative}
+.bar{height:14px;border-radius:0 4px 4px 0;background:var(--pc);min-width:1px;position:relative}
+.bar span{position:absolute;left:calc(100% + 6px);top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:11px;color:var(--ink);white-space:nowrap}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px}
+.legend span{display:flex;gap:6px;align-items:center}
+
+.ratio{display:inline-block;padding:1px 8px;border-radius:12px;font-family:var(--mono);font-weight:600;font-size:13px}
+.ratio.up{background:color-mix(in srgb,var(--good) 16%,transparent);color:var(--good)}
+.ratio.down{background:color-mix(in srgb,var(--bad) 14%,transparent);color:var(--bad)}
+.ratio.eq{background:var(--sunk);color:var(--muted)}
+
+/* damage */
+.dmg td input{width:64px;text-align:right;padding:6px;font-family:var(--mono)}
+.step{display:inline-flex;align-items:center;gap:2px}
+.step button{width:30px;height:34px;border:1px solid var(--line);background:var(--sunk);border-radius:6px;cursor:pointer;font-weight:700}
+.formula{font-size:12px;color:var(--muted);background:var(--sunk);border-radius:8px;padding:8px 10px}
+
+.plots-edit{display:grid;gap:12px}
+.pblock{display:grid;gap:8px;padding:12px;border:1px solid var(--line);border-left:4px solid var(--pc);border-radius:8px;background:var(--sunk)}
+.chems{display:grid;gap:6px}
+.chem{display:grid;grid-template-columns:22px 1.3fr 1fr 1fr 1.6fr 32px;gap:6px;align-items:center}
+.chem .cno{font-family:var(--mono);font-size:12px;color:var(--muted);text-align:center}
+.chem .x{border:0;background:none;color:var(--muted);cursor:pointer;width:32px;height:32px;border-radius:6px;font-size:16px}
+.chem .x:hover{color:var(--bad);background:var(--surface)}
+.cdate{display:flex;align-items:center;gap:6px;min-width:0}
+.cdate span{font-size:12px;color:var(--muted);white-space:nowrap;font-weight:700}
+.ptreat{display:grid;gap:4px;font-size:13px}
+.ptreat div{display:flex;gap:6px;align-items:baseline}
+.ptreat b{white-space:nowrap}
+.pe{display:grid;grid-template-columns:auto 1fr 120px auto;gap:8px;align-items:center}
+.note{font-size:12px;color:var(--muted)}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 16px;border-radius:20px;font-size:14px;z-index:30;opacity:0;transition:opacity .2s;pointer-events:none;max-width:calc(100% - 32px)}
+.toast.on{opacity:1}
+.sample{background:var(--flesh-soft);border:1px solid color-mix(in srgb,var(--flesh) 50%,transparent);border-radius:8px;padding:8px 12px;font-size:13px}
+details summary{cursor:pointer;font-weight:700;font-size:14px}
+@media (max-width:520px){
+  .pe{grid-template-columns:auto 1fr;}
+  .chem{grid-template-columns:22px 1fr 32px;}
+  .chem input[data-k="rate"],.chem input[data-k="method"],.chem .cdate{grid-column:2}
+  .pe{grid-template-columns:auto 1fr 1fr}
+  .pe input{grid-column:2 / 4}
+  .pe select{grid-column:2}
+  .tally .v{font-size:15px}
+  .entry input{font-size:26px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<header class="top">
+  <div class="top-inner">
+    <div class="brand"><h1>かんしょ調査野帳</h1><p class="trial" id="trialName"></p></div>
+    <nav class="tabs" role="tablist" id="tabs">
+      <button role="tab" data-tab="setup">試験情報</button>
+      <button role="tab" data-tab="input">① 重量入力</button>
+      <button role="tab" data-tab="grade">② 規格集計</button>
+      <button role="tab" data-tab="damage">被害度</button>
+      <button role="tab" data-tab="quality">品質区分</button>
+    </nav>
+  </div>
+</header>
+<main class="wrap" id="main"></main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+"use strict";
+const GRADES=[ // 小さい順
+  {k:"区分外",min:0,max:50,label:"0–50g"},
+  {k:"2S",min:50,max:100,label:"50–100g"},
+  {k:"S",min:100,max:200,label:"100–200g"},
+  {k:"M",min:200,max:350,label:"200–350g"},
+  {k:"L",min:350,max:500,label:"350–500g"},
+  {k:"2L",min:500,max:700,label:"500–700g"},
+  {k:"3L",min:700,max:Infinity,label:"700g以上"},
+];
+const GRADES_DESC=[...GRADES].reverse(); // Excelの等級区分の並び 3L→区分外
+const DMG_LV=["無","微","小","中","多"];
+const QUAL=["A品","B品","丸品","C品"];
+const PESTS=[{id:"nema",name:"センチュウ類"},{id:"kogane",name:"コガネムシ類"}];
+const KEY="kansho-survey-v1";
+
+const gradeOf=g=>{for(const x of GRADES){if(g>=x.min&&g<x.max)return x.k}return GRADES[0].k};
+const uid=()=>Math.random().toString(36).slice(2,9);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const toHalf=s=>String(s).replace(/[０-９．]/g,c=>c==="．"?".":String.fromCharCode(c.charCodeAt(0)-0xFEE0)).replace(/[，,\s]/g,"");
+const fmt=(n,d=0)=>Number.isFinite(n)?n.toLocaleString("ja-JP",{minimumFractionDigits:d,maximumFractionDigits:d}):"–";
+const pcol=i=>`var(--p${i%5})`;
+const today=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
+
+const newChem=()=>({id:uid(),name:"",rate:"",method:"",date:""});
+const chemList=p=>(p.chems||[]).filter(c=>c.name||c.rate||c.method||c.date);
+const jd=d=>d?d.replace(/-/g,"/"):"";
+const chemText=p=>chemList(p).map(c=>[c.name,c.rate,c.method,c.date?jd(c.date)+"処理":""].filter(Boolean).join(" ")).join("、");
+function migrate(s){ // 旧データ：試験全体の薬剤欄 → 各区の薬剤リストへ
+  for(const t of Object.values(s.trials)){
+    t.plots.forEach(p=>{if(!Array.isArray(p.chems))p.chems=[]});
+    if(t.pesticide||t.rate||t.method){const p=t.plots.find(x=>x.role==="test")||t.plots[0];if(p)p.chems.unshift({id:uid(),name:t.pesticide||"",rate:t.rate||"",method:t.method||""});}
+    delete t.pesticide;delete t.rate;delete t.method;
+    t.plots.forEach(p=>{if(!p.chems.length)p.chems.push(newChem())});
+  }
+  return s;
+}
+function newTrial(name){
+  const a=uid(),b=uid();
+  return {id:uid(),name:name||"新しい試験",date:"",place:"",variety:"",
+    hills:5,hills10a:"",note:"",
+    plots:[{id:a,name:"試験区",role:"test",chems:[newChem()]},{id:b,name:"対照区",role:"control",chems:[newChem()]}],
+    weights:[],damage:{nema:{},kogane:{}},quality:{}};
+}
+let S;
+function load(){
+  try{const raw=localStorage.getItem(KEY);if(raw){const s=JSON.parse(raw);
+    if(s&&s.trials){for(const k of Object.keys(s.trials))if(s.trials[k].sample)delete s.trials[k]; // 仮データを削除
+      if(Object.keys(s.trials).length){if(!s.trials[s.cur])s.cur=Object.keys(s.trials)[0];return migrate(s);}}}}catch(e){}
+  const t=newTrial();return {cur:t.id,trials:{[t.id]:t},tab:"input",ui:{}};
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+S=load();S.ui=S.ui||{};S.tab="setup"; // 開いたときは試験情報から
+const T=()=>S.trials[S.cur];
+
+let toastTimer;
+function toast(msg){const el=document.getElementById("toast");el.textContent=msg;el.classList.add("on");clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove("on"),1800)}
+
+/* ---- calculations ---- */
+function plotStats(t,pid){
+  const ws=t.weights.filter(w=>w.plot===pid).map(w=>w.g);
+  const byG={};GRADES.forEach(x=>byG[x.k]={n:0,g:0});
+  ws.forEach(g=>{const k=gradeOf(g);byG[k].n++;byG[k].g+=g});
+  const n=ws.length,sum=ws.reduce((a,b)=>a+b,0),mean=n?sum/n:NaN;
+  const sd=n?Math.sqrt(ws.reduce((a,b)=>a+(b-mean)**2,0)/n):NaN;
+  const hills=Number(t.hills)||0;
+  const h10=Number(t.hills10a)||0;
+  const perHillG=hills?sum/hills:NaN;
+  return {n,sum,mean,sd,byG,perHillN:hills?n/hills:NaN,perHillG,
+    per10a:h10&&hills?perHillG*h10/1000:NaN,
+    max:n?Math.max(...ws):NaN,min:n?Math.min(...ws):NaN};
+}
+const control=t=>t.plots.find(p=>p.role==="control");
+function ratioHTML(v,c){ // 対照比
+  if(!Number.isFinite(v)||!Number.isFinite(c)||c===0)return '<span class="ratio eq">–</span>';
+  const r=v/c*100;const cls=r>100.5?"up":r<99.5?"down":"eq";
+  return `<span class="ratio ${cls}">${fmt(r)}</span>`;
+}
+function dmgIndex(arr){
+  const a=arr||[0,0,0,0,0];const n=a.reduce((x,y)=>x+(+y||0),0);
+  if(!n)return {n:0,idx:NaN};
+  return {n,idx:((+a[1]||0)+(+a[2]||0)*2+(+a[3]||0)*3+(+a[4]||0)*4)/(4*n)*100};
+}
+
+/* ---- render ---- */
+const main=document.getElementById("main");
+function setTab(tab){S.tab=tab;save();render()}
+document.getElementById("tabs").addEventListener("click",e=>{const b=e.target.closest("button[data-tab]");if(b)setTab(b.dataset.tab)});
+
+function render(){
+  const t=T();
+  document.getElementById("trialName").textContent=t.name+(t.date?"　"+t.date.replace(/-/g,"/"):"");
+  document.querySelectorAll("#tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===S.tab));
+  ({input:renderInput,grade:renderGrade,damage:renderDamage,quality:renderQuality,setup:renderSetup})[S.tab||"input"]();
+}
+
+function sampleBanner(t){return ""}
+
+/* ① 重量入力 */
+function renderInput(){
+  const t=T();
+  if(!S.ui.plot||!t.plots.some(p=>p.id===S.ui.plot))S.ui.plot=t.plots[0].id;
+  if(S.ui.hill==null||S.ui.hill>t.hills)S.ui.hill=t.hills?1:0;
+  main.innerHTML=`<section class="panel">
+    ${sampleBanner(t)}
+    <div class="card" style="display:grid;gap:14px">
+      <div style="display:grid;gap:6px"><span class="sub">記録する区</span><div class="seg" id="plotSeg"></div></div>
+      <div style="display:grid;gap:6px"><span class="sub">掘り取り株（${t.hills}株／区）</span><div class="chips" id="hillChips"></div></div>
+      <form class="entry" id="entryForm" autocomplete="off">
+        <div class="unit"><input id="wIn" type="text" inputmode="decimal" enterkeyhint="next" placeholder="0" aria-label="いもの重さ（g）"></div>
+        <button class="btn primary" type="submit">記録</button>
+      </form>
+      <div class="last" id="last">1本ずつ重さを入れて Enter（または「記録」）。</div>
+      <div class="tally" id="tally"></div>
+    </div>
+    <div style="display:grid;gap:8px">
+      <div class="row" style="justify-content:space-between">
+        <h3 id="listTitle"></h3>
+        <div class="row"><button class="btn small" id="undo">1つ戻す</button></div>
+      </div>
+      <div class="list" id="list"></div>
+      <p class="note">重さをタップすると修正できます。× で削除。</p>
+    </div>
+    <details class="card"><summary>まとめて貼り付け（Excelの列など）</summary>
+      <div style="display:grid;gap:8px;margin-top:10px">
+        <textarea id="bulk" rows="5" placeholder="387&#10;212&#10;183"></textarea>
+        <p class="note">改行・スペース・カンマ区切りの数値を、上で選んでいる区・株に追加します。</p>
+        <div><button class="btn" id="bulkAdd">追加する</button></div>
+      </div>
+    </details>
+  </section>`;
+  drawInputParts();
+  const inp=document.getElementById("wIn");
+  document.getElementById("entryForm").addEventListener("submit",e=>{
+    e.preventDefault();
+    const v=parseFloat(toHalf(inp.value));
+    if(!(v>0)){toast("重さ（g）を数字で入れてください");inp.focus();return}
+    const w={id:uid(),plot:S.ui.plot,hill:S.ui.hill||0,g:v};
+    t.weights.push(w);save();inp.value="";inp.focus();
+    const pn=t.plots.find(p=>p.id===w.plot).name;
+    document.getElementById("last").innerHTML=`${esc(pn)}${w.hill?` 株${w.hill}`:""}：<b class="num">${fmt(v,v%1?1:0)} g</b> → <span class="gpill ${gradeOf(v)==="区分外"?"out":""}">${gradeOf(v)}</span>　（${t.weights.filter(x=>x.plot===w.plot).length}本目）`;
+    drawInputParts(true);
+  });
+  document.getElementById("undo").addEventListener("click",()=>{
+    const idx=[...t.weights].map(w=>w.plot).lastIndexOf(S.ui.plot);
+    if(idx<0)return;const [w]=t.weights.splice(idx,1);save();toast(`${fmt(w.g)} g を取り消しました`);drawInputParts(true);
+  });
+  document.getElementById("bulkAdd").addEventListener("click",()=>{
+    const ta=document.getElementById("bulk");
+    const vals=ta.value.split(/[\s,，、　]+/).map(s=>parseFloat(toHalf(s))).filter(v=>v>0);
+    if(!vals.length){toast("数値が見つかりません");return}
+    vals.forEach(g=>t.weights.push({id:uid(),plot:S.ui.plot,hill:S.ui.hill||0,g}));
+    save();ta.value="";toast(`${vals.length}本 追加しました`);drawInputParts(true);
+  });
+  if(matchMedia("(pointer:fine)").matches)inp.focus();
+}
+function drawInputParts(){
+  const t=T();
+  const seg=document.getElementById("plotSeg");
+  seg.innerHTML=t.plots.map((p,i)=>{const n=t.weights.filter(w=>w.plot===p.id).length;
+    return `<button type="button" data-p="${p.id}" style="--pc:${pcol(i)}" aria-pressed="${p.id===S.ui.plot}"><span class="nm"><span class="dot"></span>${esc(p.name)}</span><span class="n">${p.role==="control"?"対照 · ":""}${n}本</span></button>`}).join("");
+  seg.onclick=e=>{const b=e.target.closest("button[data-p]");if(!b)return;S.ui.plot=b.dataset.p;save();drawInputParts();document.getElementById("wIn").focus()};
+  const hc=document.getElementById("hillChips");
+  const cnt=h=>t.weights.filter(w=>w.plot===S.ui.plot&&w.hill===h).length;
+  let chips="";for(let h=1;h<=t.hills;h++)chips+=`<button type="button" data-h="${h}" aria-pressed="${S.ui.hill===h}">株${h}<span class="c">${cnt(h)}</span></button>`;
+  const c0=cnt(0);chips+=`<button type="button" data-h="0" aria-pressed="${S.ui.hill===0}">指定なし${c0?`<span class="c">${c0}</span>`:""}</button>`;
+  hc.innerHTML=chips;
+  hc.onclick=e=>{const b=e.target.closest("button[data-h]");if(!b)return;S.ui.hill=+b.dataset.h;save();drawInputParts();document.getElementById("wIn").focus()};
+  const st=plotStats(t,S.ui.plot);
+  document.getElementById("tally").innerHTML=GRADES_DESC.map(x=>`<div><span class="k">${x.k}</span><span class="v">${st.byG[x.k].n}</span><span class="r">${x.label.replace("g","")}</span></div>`).join("");
+  const p=t.plots.find(p=>p.id===S.ui.plot);
+  document.getElementById("listTitle").innerHTML=`${esc(p.name)}　<span class="sub num">${st.n}本 / ${fmt(st.sum)} g</span>`;
+  const list=document.getElementById("list");
+  const items=t.weights.map((w,i)=>({w,i})).filter(o=>o.w.plot===S.ui.plot);
+  list.innerHTML=items.length?items.map((o,j)=>{const g=gradeOf(o.w.g);return `<div class="it" data-id="${o.w.id}"><span class="no">${j+1}</span><button class="w num" data-edit title="修正">${fmt(o.w.g,o.w.g%1?1:0)}</button><span style="display:grid;justify-items:end"><span class="gpill ${g==="区分外"?"out":""}">${g}</span>${o.w.hill?`<span class="hl">株${o.w.hill}</span>`:""}</span><button class="x" data-del aria-label="削除">×</button></div>`}).reverse().join(""):`<p class="sub">まだ記録がありません。</p>`;
+  list.onclick=e=>{
+    const it=e.target.closest(".it");if(!it)return;const w=t.weights.find(x=>x.id===it.dataset.id);if(!w)return;
+    if(e.target.closest("[data-del]")){t.weights=t.weights.filter(x=>x!==w);save();toast(`${fmt(w.g)} g を削除しました`);drawInputParts();return}
+    if(e.target.closest("[data-edit]")){
+      const b=e.target.closest("[data-edit]");const inp=document.createElement("input");inp.className="ed";inp.value=w.g;inp.inputMode="decimal";
+      b.replaceWith(inp);inp.focus();inp.select();
+      const done=ok=>{if(ok){const v=parseFloat(toHalf(inp.value));if(v>0){w.g=v;save();}}drawInputParts()};
+      inp.addEventListener("keydown",ev=>{if(ev.key==="Enter"){ev.preventDefault();done(true)}if(ev.key==="Escape")done(false)});
+      inp.addEventListener("blur",()=>done(true));
+    }
+  };
+}
+
+/* ② 規格集計 */
+function renderGrade(){
+  const t=T();const ctl=control(t);
+  const st=Object.fromEntries(t.plots.map(p=>[p.id,plotStats(t,p.id)]));
+  const cs=ctl?st[ctl.id]:null;
+  const head=t.plots.map((p,i)=>`<th colspan="3" style="text-align:center;border-left:1px solid var(--line)"><span class="phead" style="justify-content:center;--pc:${pcol(i)}"><span class="dot"></span>${esc(p.name)}</span></th>`).join("");
+  const sub=t.plots.map(()=>`<th style="border-left:1px solid var(--line)">本数</th><th>比率</th><th>重量 g</th>`).join("");
+  const rows=GRADES_DESC.map(x=>`<tr><td><b>${x.k}</b> <span class="range">${x.label}</span></td>${t.plots.map(p=>{const s=st[p.id],b=s.byG[x.k];return `<td class="num" style="border-left:1px solid var(--line)">${b.n}</td><td class="num">${s.n?fmt(b.n/s.n*100,1)+"%":"–"}</td><td class="num">${fmt(b.g)}</td>`}).join("")}</tr>`).join("");
+  const tot=`<tr class="total"><td>計</td>${t.plots.map(p=>{const s=st[p.id];return `<td class="num" style="border-left:1px solid var(--line)">${s.n}</td><td class="num">${s.n?"100%":"–"}</td><td class="num">${fmt(s.sum)}</td>`}).join("")}</tr>`;
+
+  const statDefs=[
+    ["総本数","n",0,"本"],["総重量","sum",0,"g"],["平均一本重","mean",1,"g"],["標準偏差","sd",1,"g"],
+    ["1株当たり本数","perHillN",1,"本"],["1株当たり重量","perHillG",0,"g"],
+  ];
+  if(Number(t.hills10a))statDefs.push(["10a換算収量","per10a",0,"kg"]);
+  const stats=statDefs.map(([lb,key,d,u])=>`<div class="stat"><div class="lb">${lb}</div><div class="vals">${t.plots.map((p,i)=>`<div><span class="pn" style="--pc:${pcol(i)}"><span class="dot"></span>${esc(p.name)}</span><span class="pv">${fmt(st[p.id][key],d)}<small class="sub"> ${u}</small></span></div>`).join("")}</div></div>`).join("");
+
+  const maxN=Math.max(1,...t.plots.flatMap(p=>GRADES.map(x=>st[p.id].byG[x.k].n)));
+  const chart=GRADES_DESC.map(x=>`<div class="crow"><span class="k">${x.k}</span><div class="bars">${t.plots.map((p,i)=>{const n=st[p.id].byG[x.k].n;return `<div class="bar" style="--pc:${pcol(i)};width:calc((100% - 44px) * ${n/maxN})"><span>${n}</span></div>`}).join("")}</div></div>`).join("");
+
+  const ratioRows=ctl?t.plots.filter(p=>p!==ctl).map(p=>{const s=st[p.id];return `<tr><td>${esc(p.name)}</td><td>${ratioHTML(s.n,cs.n)}</td><td>${ratioHTML(s.sum,cs.sum)}</td><td>${ratioHTML(s.mean,cs.mean)}</td><td>${ratioHTML(largeN(s),largeN(cs))}</td></tr>`}).join(""):"";
+
+  main.innerHTML=`<section class="panel">
+    ${sampleBanner(t)}
+    <div class="row" style="justify-content:space-between"><div><h2>形量区分（等級）別 本数</h2><p class="sub">掘り取り ${t.hills}株／区　·　境界値は上の規格に入ります（例：50g → 2S、700g → 3L）</p></div>
+      <div class="row"><button class="btn" id="copyTbl">表をコピー</button><button class="btn primary" id="xlsx">Excelで保存</button></div></div>
+    ${t.plots.some(p=>chemList(p).length)?`<div class="ptreat">${t.plots.map((p,i)=>`<div style="--pc:${pcol(i)}"><span class="dot"></span><b>${esc(p.name)}</b><span class="sub">${esc(chemText(p))||"（薬剤未入力）"}</span></div>`).join("")}</div>`:""}
+    <div class="tw"><table><thead><tr><th rowspan="2">規格</th>${head}</tr><tr>${sub}</tr></thead><tbody>${rows}${tot}</tbody></table></div>
+    <div class="card chart"><div class="row" style="justify-content:space-between"><h3>規格別本数</h3><div class="legend">${t.plots.map((p,i)=>`<span style="--pc:${pcol(i)}"><span class="dot"></span>${esc(p.name)}</span>`).join("")}</div></div>${chart}</div>
+    <div class="stats">${stats}</div>
+    ${ctl&&t.plots.length>1?`<div style="display:grid;gap:8px"><h3>対照区比（${esc(ctl.name)} = 100）</h3><div class="tw"><table><thead><tr><th>区</th><th>本数</th><th>総重量</th><th>平均一本重</th><th>M以上 本数</th></tr></thead><tbody>${ratioRows}</tbody></table></div><p class="note">100より大きい値は対照区を上回ったことを示します。</p></div>`:""}
+    ${!Number(t.hills10a)?`<p class="note">「試験情報」で10a当たり植付株数を入れると、10a換算収量（kg/10a）も表示します。</p>`:""}
+  </section>`;
+  document.getElementById("xlsx").onclick=exportXlsx;
+  document.getElementById("copyTbl").onclick=()=>copyText(gradeTSV(t,st));
+}
+function largeN(s){return ["M","L","2L","3L"].reduce((a,k)=>a+s.byG[k].n,0)}
+function gradeTSV(t,st){
+  const lines=[["等級区分",...GRADES_DESC.map(x=>x.k),"計"].join("\t")];
+  t.plots.forEach(p=>lines.push([p.name,...GRADES_DESC.map(x=>st[p.id].byG[x.k].n),st[p.id].n].join("\t")));
+  return lines.join("\n");
+}
+async function copyText(txt){
+  try{await navigator.clipboard.writeText(txt);toast("コピーしました（Excelに貼り付けできます）")}
+  catch(e){const ta=document.createElement("textarea");ta.value=txt;document.body.appendChild(ta);ta.select();let ok=false;try{ok=document.execCommand("copy")}catch(_){}ta.remove();toast(ok?"コピーしました":"コピーできませんでした")}
+}
+
+/* 被害度 */
+function renderDamage(){
+  const t=T();const ctl=control(t);
+  const block=pest=>{
+    const d=t.damage[pest.id]=t.damage[pest.id]||{};
+    const rows=t.plots.map((p,i)=>{const a=d[p.id]||[0,0,0,0,0];const r=dmgIndex(a);
+      return `<tr><td><span class="phead" style="justify-content:flex-start;--pc:${pcol(i)}"><span class="dot"></span>${esc(p.name)}</span></td>${DMG_LV.map((lv,j)=>`<td><span class="step"><button type="button" data-pest="${pest.id}" data-p="${p.id}" data-j="${j}" data-d="-1" aria-label="${lv}を1減らす">−</button><input type="text" inputmode="numeric" data-pest="${pest.id}" data-p="${p.id}" data-j="${j}" value="${a[j]||0}" aria-label="${esc(p.name)} ${lv}"><button type="button" data-pest="${pest.id}" data-p="${p.id}" data-j="${j}" data-d="1" aria-label="${lv}を1増やす">＋</button></span></td>`).join("")}<td class="num"><b>${r.n}</b></td><td class="num"><b>${fmt(r.idx,1)}</b></td></tr>`}).join("");
+    const ci=ctl?dmgIndex(d[ctl.id]).idx:NaN;
+    const pv=ctl?t.plots.filter(p=>p!==ctl).map(p=>{const v=dmgIndex(d[p.id]).idx;const val=Number.isFinite(v)&&ci>0?(1-v/ci)*100:NaN;return `<span>${esc(p.name)}：<b class="num">${fmt(val,1)}</b></span>`}).join("　"):"";
+    return `<div style="display:grid;gap:8px"><h3>${pest.name}</h3>
+      <div class="tw dmg"><table><thead><tr><th>処理区</th>${DMG_LV.map(l=>`<th style="text-align:center">${l}</th>`).join("")}<th>調査芋数</th><th>被害度</th></tr></thead><tbody>${rows}</tbody></table></div>
+      ${ctl?`<p class="sub">防除価（対照：${esc(ctl.name)}）　${pv}　${ci>0?"":"<span class='note'>※対照区の被害度が0のため計算できません</span>"}</p>`:""}</div>`;
+  };
+  main.innerHTML=`<section class="panel">
+    ${sampleBanner(t)}
+    <div><h2>被害度調査</h2><p class="sub">被害程度ごとの芋数を入力します。調査芋数は合計から自動で出します。</p></div>
+    ${PESTS.map(block).join("")}
+    <div class="formula">被害度（0〜100）＝（微×1＋小×2＋中×3＋多×4）÷（調査芋数×4）×100<br>防除価 ＝ 100 −（試験区の被害度 ÷ 対照区の被害度）×100</div>
+  </section>`;
+  main.onclick=null;
+  main.querySelectorAll(".dmg").forEach(el=>{
+    el.addEventListener("click",e=>{const b=e.target.closest("button[data-d]");if(!b)return;setDmg(b.dataset.pest,b.dataset.p,+b.dataset.j,v=>Math.max(0,v+ +b.dataset.d))});
+    el.addEventListener("change",e=>{const i=e.target.closest("input[data-j]");if(!i)return;setDmg(i.dataset.pest,i.dataset.p,+i.dataset.j,()=>Math.max(0,parseInt(toHalf(i.value))||0))});
+  });
+}
+function setDmg(pest,pid,j,fn){const t=T();const d=t.damage[pest]=t.damage[pest]||{};const a=d[pid]=d[pid]||[0,0,0,0,0];a[j]=fn(+a[j]||0);save();renderDamage()}
+
+/* 品質区分 */
+function renderQuality(){
+  const t=T();
+  const rows=t.plots.map((p,i)=>{const a=t.quality[p.id]||[0,0,0,0];const n=a.reduce((x,y)=>x+(+y||0),0);
+    return `<tr><td><span class="phead" style="justify-content:flex-start;--pc:${pcol(i)}"><span class="dot"></span>${esc(p.name)}</span></td>${QUAL.map((q,j)=>`<td><span class="step"><button type="button" data-p="${p.id}" data-j="${j}" data-d="-1" aria-label="${q}を1減らす">−</button><input type="text" inputmode="numeric" data-p="${p.id}" data-j="${j}" value="${a[j]||0}" aria-label="${esc(p.name)} ${q}"><button type="button" data-p="${p.id}" data-j="${j}" data-d="1" aria-label="${q}を1増やす">＋</button></span></td>`).join("")}<td class="num"><b>${n}</b></td></tr>`}).join("");
+  const ratio=t.plots.map(p=>{const a=t.quality[p.id]||[0,0,0,0];const n=a.reduce((x,y)=>x+(+y||0),0);
+    return `<tr><td>${esc(p.name)}</td>${QUAL.map((q,j)=>`<td class="num">${n?fmt((+a[j]||0)/n*100,1)+"%":"–"}</td>`).join("")}<td class="num">${n?"100%":"–"}</td></tr>`}).join("");
+  const wn=t.plots.map(p=>{const s=plotStats(t,p.id);const a=t.quality[p.id]||[0,0,0,0];const n=a.reduce((x,y)=>x+(+y||0),0);return n&&s.n&&n!==s.n?`<li>${esc(p.name)}：品質区分の計 ${n}本 と 重量記録 ${s.n}本 が一致しません</li>`:""}).join("");
+  main.innerHTML=`<section class="panel">
+    ${sampleBanner(t)}
+    <div><h2>品質区分</h2><p class="sub">A品・B品・丸品・C品の本数を入力します。</p></div>
+    <div class="tw dmg"><table><thead><tr><th>処理区</th>${QUAL.map(q=>`<th style="text-align:center">${q}</th>`).join("")}<th>計</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <div style="display:grid;gap:8px"><h3>各品質区分比率</h3><div class="tw"><table><thead><tr><th>処理区</th>${QUAL.map(q=>`<th>${q}</th>`).join("")}<th>計</th></tr></thead><tbody>${ratio}</tbody></table></div></div>
+    ${wn?`<ul class="note" style="margin:0;padding-left:18px">${wn}</ul>`:""}
+  </section>`;
+  const el=main.querySelector(".dmg");
+  el.addEventListener("click",e=>{const b=e.target.closest("button[data-d]");if(!b)return;setQ(b.dataset.p,+b.dataset.j,v=>Math.max(0,v+ +b.dataset.d))});
+  el.addEventListener("change",e=>{const i=e.target.closest("input[data-j]");if(!i)return;setQ(i.dataset.p,+i.dataset.j,()=>Math.max(0,parseInt(toHalf(i.value))||0))});
+}
+function setQ(pid,j,fn){const t=T();const a=t.quality[pid]=t.quality[pid]||[0,0,0,0];a[j]=fn(+a[j]||0);save();renderQuality()}
+
+/* 試験情報 */
+function armed(btn,fn){ // 2回押しで実行
+  btn.addEventListener("click",()=>{
+    if(btn.classList.contains("armed")){fn();return}
+    const orig=btn.textContent;btn.classList.add("armed");btn.textContent="もう一度押すと削除";
+    setTimeout(()=>{if(btn.isConnected){btn.classList.remove("armed");btn.textContent=orig}},3000);
+  });
+}
+function renderSetup(){
+  const t=T();
+  const trials=Object.values(S.trials);
+  const f=(id,label,val,type="text",extra="")=>`<label class="f" for="${id}">${label}<input id="${id}" type="${type}" value="${esc(val)}" ${extra}></label>`;
+  main.innerHTML=`<section class="panel">
+    <div class="card" style="display:grid;gap:10px">
+      <div class="row" style="justify-content:space-between"><h3>試験の切り替え</h3><button class="btn small" id="newT">＋ 新しい試験</button></div>
+      <select id="trialSel" aria-label="試験を選ぶ">${trials.map(x=>`<option value="${x.id}" ${x.id===t.id?"selected":""}>${esc(x.name)}　${x.date?jd(x.date):"日付なし"}</option>`).join("")}</select>
+    </div>
+    <div class="card" style="display:grid;gap:12px">
+      <h3>試験の内容</h3>
+      <div class="grid2">
+        ${f("s_name","試験名",t.name)}${f("s_plant","植付日",t.plantDate||"","date")}
+        ${f("s_harv","収穫日",t.harvestDate||"","date")}${f("s_date","調査日",t.date,"date")}${f("s_place","場所（ほ場）",t.place)}${f("s_var","品種",t.variety,"text",'placeholder="例：べにはるか"')}
+        ${f("s_hills","掘り取り株数（1区あたり）",t.hills,"number",'min="1" max="50" inputmode="numeric"')}
+        ${f("s_h10","10a当たり植付株数（任意）",t.hills10a,"number",'min="0" inputmode="numeric" placeholder="例：3300"')}
+      </div>
+      <label class="f" for="s_note">備考<textarea id="s_note" rows="2">${esc(t.note)}</textarea></label>
+    </div>
+    <div class="card" style="display:grid;gap:10px">
+      <h3>処理区と使用薬剤</h3>
+      <p class="note">区ごとに薬剤名・処理量・処理日・処理方法を入れます。1つの区で複数の薬剤を使う場合は「＋ 薬剤を追加」で行を増やしてください。</p>
+      <div class="plots-edit" id="plotsEd"></div>
+      <div><button class="btn small" id="addPlot">＋ 区を追加</button></div>
+      <p class="note">対照区は1つだけ選べます。対照区比・防除価の基準になります。</p>
+    </div>
+    <div class="card" style="display:grid;gap:10px">
+      <h3>保存と削除</h3>
+      <p class="note">記録はこの端末のブラウザに自動保存されます。別の端末とは共有されないので、調査が終わったらExcelで保存してください。</p>
+      <div class="row"><button class="btn primary" id="xlsx2">Excelで保存</button><button class="btn danger" id="delT">この試験を削除</button></div>
+    </div>
+  </section>`;
+  const bind=(id,key,num)=>document.getElementById(id).addEventListener("input",e=>{let v=e.target.value;if(num)v=Math.max(0,parseInt(toHalf(v))||0);t[key]=v;save();document.getElementById("trialName").textContent=t.name+(t.date?"　"+t.date.replace(/-/g,"/"):"")});
+  bind("s_name","name");bind("s_plant","plantDate");bind("s_harv","harvestDate");bind("s_date","date");bind("s_place","place");bind("s_var","variety");bind("s_note","note");bind("s_h10","hills10a");
+  document.getElementById("s_hills").addEventListener("change",e=>{t.hills=Math.min(50,Math.max(1,parseInt(toHalf(e.target.value))||5));e.target.value=t.hills;save()});
+  document.getElementById("trialSel").onchange=e=>{S.cur=e.target.value;S.ui={};save();render()};
+  document.getElementById("newT").onclick=()=>{const n=newTrial();S.trials[n.id]=n;S.cur=n.id;S.ui={};save();render();toast("新しい試験を作りました");document.getElementById("s_name").focus();document.getElementById("s_name").select()};
+  document.getElementById("xlsx2").onclick=exportXlsx;
+  armed(document.getElementById("delT"),()=>{
+    delete S.trials[t.id];if(!Object.keys(S.trials).length){const n=newTrial();S.trials[n.id]=n}
+    S.cur=Object.keys(S.trials)[0];S.ui={};save();render();toast("試験を削除しました");
+  });
+  drawPlotsEd();
+  document.getElementById("addPlot").onclick=()=>{t.plots.push({id:uid(),name:"試験区"+(t.plots.length),role:"test",chems:[newChem()]});save();drawPlotsEd()};
+}
+function drawPlotsEd(){
+  const t=T();const el=document.getElementById("plotsEd");
+  el.innerHTML=t.plots.map((p,i)=>{const n=t.weights.filter(w=>w.plot===p.id).length;
+    const chems=p.chems.map((c,j)=>`<div class="chem" data-c="${c.id}">
+      <span class="cno">${j+1}</span>
+      <input type="text" id="cn_${c.id}" data-k="name" value="${esc(c.name)}" placeholder="薬剤名" aria-label="薬剤名">
+      <input type="text" id="cr_${c.id}" data-k="rate" value="${esc(c.rate)}" placeholder="処理量 例：4L/10a" aria-label="処理量">
+      <label class="cdate" for="cd_${c.id}"><span>処理日</span><input type="date" id="cd_${c.id}" data-k="date" value="${esc(c.date||"")}"></label>
+      <input type="text" id="cm_${c.id}" data-k="method" value="${esc(c.method)}" placeholder="処理方法 例：植付前 全面土壌混和" aria-label="処理方法">
+      <button class="x" data-crm aria-label="この薬剤を削除">×</button></div>`).join("");
+    return `<div class="pblock" data-p="${p.id}" style="--pc:${pcol(i)}">
+      <div class="pe"><span class="dot"></span><input type="text" id="pn_${p.id}" value="${esc(p.name)}" aria-label="区の名前"><select id="pr_${p.id}" aria-label="区の種類"><option value="test" ${p.role==="test"?"selected":""}>試験区</option><option value="control" ${p.role==="control"?"selected":""}>対照区</option></select><button class="btn small danger" data-rm ${t.plots.length<=1?"disabled":""}>区を削除${n?`（${n}本）`:""}</button></div>
+      <div class="chems">${chems}</div>
+      <div><button class="btn small" data-cadd>＋ 薬剤を追加</button></div></div>`}).join("");
+  el.querySelectorAll(".pblock").forEach(row=>{
+    const p=t.plots.find(x=>x.id===row.dataset.p);
+    row.querySelector(".pe input").addEventListener("input",e=>{p.name=e.target.value;save()});
+    row.querySelector(".pe select").addEventListener("change",e=>{if(e.target.value==="control")t.plots.forEach(x=>x.role="test");p.role=e.target.value;save();drawPlotsEd()});
+    const rm=row.querySelector("[data-rm]");if(!rm.disabled)armed(rm,()=>{t.plots=t.plots.filter(x=>x!==p);t.weights=t.weights.filter(w=>w.plot!==p.id);save();drawPlotsEd()});
+    row.querySelectorAll(".chem").forEach(cr=>{
+      const c=p.chems.find(x=>x.id===cr.dataset.c);
+      cr.querySelectorAll("input").forEach(inp=>inp.addEventListener("input",e=>{c[e.target.dataset.k]=e.target.value;save()}));
+      cr.querySelector("[data-crm]").onclick=()=>{p.chems=p.chems.filter(x=>x!==c);if(!p.chems.length)p.chems.push(newChem());save();drawPlotsEd()};
+    });
+    row.querySelector("[data-cadd]").onclick=()=>{const c=newChem();p.chems.push(c);save();drawPlotsEd();document.getElementById("cn_"+c.id).focus()};
+  });
+}
+
+/* Excel出力（書式つきの表＋Excelグラフ＋グラフ画像） */
+const XL={
+  ns:'xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"',
+  x:s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"),
+  col:c=>{let s="";while(c>0){const m=(c-1)%26;s=String.fromCharCode(65+m)+s;c=Math.floor((c-1)/26)}return s},
+};
+XL.ref=(r,c,abs)=>abs?`$${XL.col(c)}$${r}`:`${XL.col(c)}${r}`;
+XL.q=name=>`'${name.replace(/'/g,"''")}'`;
+// スタイル番号
+const ST={def:0,title:1,hd:2,txt:3,int:4,dec:5,pct:6,totL:7,totI:8,totP:9,note:10,bold:11,hdL:12,dec_tot:13,gen:14,txtC:15};
+const PLOT_HEX=["8A2F4E","56704B","B8720F","3C6A8C","6B4E9A"];
+const QUAL_HEX=["3C6A8C","7FA6C4","D9A441","B3261E"];
+
+function XSheet(name){this.name=name;this.rows={};this.merges=[];this.widths={};this.freeze=0;this.charts=[];this.images=[]}
+XSheet.prototype.set=function(r,c,v,s=0){(this.rows[r]=this.rows[r]||{})[c]={v,s};return this};
+XSheet.prototype.fx=function(r,c,f,val,s=0){(this.rows[r]=this.rows[r]||{})[c]={f,v:val,s};return this};
+XSheet.prototype.merge=function(r1,c1,r2,c2,s){this.merges.push(`${XL.ref(r1,c1)}:${XL.ref(r2,c2)}`);if(s!=null)for(let r=r1;r<=r2;r++)for(let c=c1;c<=c2;c++)if(!(this.rows[r]&&this.rows[r][c]))this.set(r,c,null,s);return this};
+XSheet.prototype.xml=function(drawRid){
+  const rs=Object.keys(this.rows).map(Number).sort((a,b)=>a-b);
+  const cell=(r,c,o)=>{const a=`r="${XL.ref(r,c)}"${o.s?` s="${o.s}"`:""}`;
+    if(o.f!=null){const isStr=typeof o.v==="string";const v=o.v==null||o.v===""||(typeof o.v==="number"&&!Number.isFinite(o.v))?"":o.v;
+      return `<c ${a}${isStr||v===""?' t="str"':""}><f>${XL.x(o.f)}</f><v>${XL.x(v)}</v></c>`}
+    if(o.v==null||o.v==="")return `<c ${a}/>`;
+    if(typeof o.v==="number")return `<c ${a}><v>${o.v}</v></c>`;
+    return `<c ${a} t="inlineStr"><is><t xml:space="preserve">${XL.x(o.v)}</t></is></c>`};
+  const data=rs.map(r=>{const cs=Object.keys(this.rows[r]).map(Number).sort((a,b)=>a-b);return `<row r="${r}">${cs.map(c=>cell(r,c,this.rows[r][c])).join("")}</row>`}).join("");
+  const wk=Object.keys(this.widths).map(Number).sort((a,b)=>a-b);
+  const cols=wk.length?`<cols>${wk.map(c=>`<col min="${c}" max="${c}" width="${this.widths[c]}" customWidth="1"/>`).join("")}</cols>`:"";
+  const pane=this.freeze?`<pane ySplit="${this.freeze}" topLeftCell="A${this.freeze+1}" activePane="bottomLeft" state="frozen"/>`:"";
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<worksheet ${XL.ns}><sheetViews><sheetView workbookViewId="0"${this.first?' tabSelected="1"':""}>${pane}</sheetView></sheetViews><sheetFormatPr defaultRowHeight="18.75"/>${cols}<sheetData>${data}</sheetData>${this.merges.length?`<mergeCells count="${this.merges.length}">${this.merges.map(m=>`<mergeCell ref="${m}"/>`).join("")}</mergeCells>`:""}<pageMargins left="0.7" right="0.7" top="0.75" bottom="0.75" header="0.3" footer="0.3"/><pageSetup paperSize="9" orientation="landscape"/>${drawRid?`<drawing r:id="${drawRid}"/>`:""}</worksheet>`;
+};
+
+const XL_STYLES=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+<numFmts count="3"><numFmt numFmtId="164" formatCode="0.0"/><numFmt numFmtId="165" formatCode="0.0%"/><numFmt numFmtId="166" formatCode="#,##0"/></numFmts>
+<fonts count="4">
+<font><sz val="11"/><name val="游ゴシック"/><family val="3"/><charset val="128"/></font>
+<font><b/><sz val="11"/><name val="游ゴシック"/><family val="3"/><charset val="128"/></font>
+<font><b/><sz val="14"/><color rgb="FF8A2F4E"/><name val="游ゴシック"/><family val="3"/><charset val="128"/></font>
+<font><sz val="9"/><color rgb="FF6C6270"/><name val="游ゴシック"/><family val="3"/><charset val="128"/></font>
+</fonts>
+<fills count="4"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill>
+<fill><patternFill patternType="solid"><fgColor rgb="FFF1E8EC"/><bgColor indexed="64"/></patternFill></fill>
+<fill><patternFill patternType="solid"><fgColor rgb="FFFBF0D8"/><bgColor indexed="64"/></patternFill></fill></fills>
+<borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border>
+<border><left style="thin"><color rgb="FF8C8C8C"/></left><right style="thin"><color rgb="FF8C8C8C"/></right><top style="thin"><color rgb="FF8C8C8C"/></top><bottom style="thin"><color rgb="FF8C8C8C"/></bottom><diagonal/></border></borders>
+<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>
+<cellXfs count="16">
+<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>
+<xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1"/>
+<xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>
+<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment vertical="center" wrapText="1"/></xf>
+<xf numFmtId="166" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1"/>
+<xf numFmtId="164" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1"/>
+<xf numFmtId="165" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1"/>
+<xf numFmtId="0" fontId="1" fillId="3" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
+<xf numFmtId="166" fontId="1" fillId="3" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1"/>
+<xf numFmtId="165" fontId="1" fillId="3" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1"/>
+<xf numFmtId="0" fontId="3" fillId="0" borderId="0" xfId="0" applyFont="1"/>
+<xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/>
+<xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="center" wrapText="1"/></xf>
+<xf numFmtId="164" fontId="1" fillId="3" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1"/>
+<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1"/>
+<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
+</cellXfs>
+<cellStyles count="1"><cellStyle name="標準" xfId="0" builtinId="0"/></cellStyles>
+</styleSheet>`;
+
+/* Excelのグラフ（編集可） */
+function chartXml(o){
+  // o: {title, dir:'col'|'bar', grouping:'clustered'|'percentStacked', cats:{ref,vals}, series:[{nameRef,name,ref,vals,color}], yTitle, fmt, labels}
+  const x=XL.x;
+  const strCache=v=>`<c:strCache><c:ptCount val="${v.length}"/>${v.map((s,i)=>`<c:pt idx="${i}"><c:v>${x(s)}</c:v></c:pt>`).join("")}</c:strCache>`;
+  const numCache=v=>`<c:numCache><c:formatCode>General</c:formatCode><c:ptCount val="${v.length}"/>${v.map((n,i)=>Number.isFinite(n)?`<c:pt idx="${i}"><c:v>${n}</c:v></c:pt>`:"").join("")}</c:numCache>`;
+  const rich=(txt,sz,b)=>`<c:tx><c:rich><a:bodyPr/><a:lstStyle/><a:p><a:pPr><a:defRPr sz="${sz}" b="${b?1:0}"/></a:pPr><a:r><a:rPr lang="ja-JP" sz="${sz}" b="${b?1:0}"/><a:t>${x(txt)}</a:t></a:r></a:p></c:rich></c:tx>`;
+  const stacked=o.grouping!=="clustered";
+  const dl=o.labels?`<c:dLbls><c:numFmt formatCode="${x(o.lblFmt||"General")}" sourceLinked="0"/><c:spPr><a:noFill/><a:ln><a:noFill/></a:ln></c:spPr><c:txPr><a:bodyPr/><a:lstStyle/><a:p><a:pPr><a:defRPr sz="800"${stacked?'><a:solidFill><a:srgbClr val="FFFFFF"/></a:solidFill></a:defRPr>':"/>"}</a:pPr><a:endParaRPr lang="ja-JP"/></a:p></c:txPr><c:dLblPos val="${stacked?"ctr":"outEnd"}"/><c:showLegendKey val="0"/><c:showVal val="1"/><c:showCatName val="0"/><c:showSerName val="0"/><c:showPercent val="0"/><c:showBubbleSize val="0"/></c:dLbls>`:"";
+  const ser=o.series.map((s,i)=>`<c:ser><c:idx val="${i}"/><c:order val="${i}"/><c:tx><c:strRef><c:f>${x(s.nameRef)}</c:f>${strCache([s.name])}</c:strRef></c:tx><c:spPr><a:solidFill><a:srgbClr val="${s.color}"/></a:solidFill></c:spPr><c:invertIfNegative val="0"/>${dl}<c:cat><c:strRef><c:f>${x(o.cats.ref)}</c:f>${strCache(o.cats.vals)}</c:strRef></c:cat><c:val><c:numRef><c:f>${x(s.ref)}</c:f>${numCache(s.vals)}</c:numRef></c:val></c:ser>`).join("");
+  const grid=`<c:majorGridlines><c:spPr><a:ln w="6350"><a:solidFill><a:srgbClr val="D9D9D9"/></a:solidFill></a:ln></c:spPr></c:majorGridlines>`;
+  const noLine=`<c:spPr><a:ln><a:noFill/></a:ln></c:spPr>`;
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<c:chartSpace xmlns:c="http://schemas.openxmlformats.org/drawingml/2006/chart" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><c:roundedCorners val="0"/><c:chart><c:title>${rich(o.title,1200,true)}<c:overlay val="0"/></c:title><c:autoTitleDeleted val="0"/><c:plotArea><c:layout/><c:barChart><c:barDir val="${o.dir}"/><c:grouping val="${o.grouping}"/><c:varyColors val="0"/>${ser}<c:gapWidth val="${stacked?60:80}"/>${stacked?'<c:overlap val="100"/>':'<c:overlap val="-10"/>'}<c:axId val="50010"/><c:axId val="50020"/></c:barChart>
+<c:catAx><c:axId val="50010"/><c:scaling><c:orientation val="${o.dir==="bar"?"maxMin":"minMax"}"/></c:scaling><c:delete val="0"/><c:axPos val="${o.dir==="bar"?"l":"b"}"/><c:numFmt formatCode="General" sourceLinked="0"/><c:majorTickMark val="none"/><c:minorTickMark val="none"/><c:tickLblPos val="nextTo"/><c:spPr><a:ln w="9525"><a:solidFill><a:srgbClr val="8C8C8C"/></a:solidFill></a:ln></c:spPr><c:crossAx val="50020"/><c:crosses val="autoZero"/><c:auto val="1"/><c:lblAlgn val="ctr"/><c:lblOffset val="100"/><c:noMultiLvlLbl val="0"/></c:catAx>
+<c:valAx><c:axId val="50020"/><c:scaling><c:orientation val="minMax"/>${o.max!=null?`<c:max val="${o.max}"/>`:""}<c:min val="0"/></c:scaling><c:delete val="0"/><c:axPos val="${o.dir==="bar"?"t":"l"}"/>${grid}${o.yTitle?`<c:title>${rich(o.yTitle,900,false)}<c:overlay val="0"/></c:title>`:""}<c:numFmt formatCode="${x(o.fmt||"General")}" sourceLinked="0"/><c:majorTickMark val="none"/><c:minorTickMark val="none"/><c:tickLblPos val="nextTo"/>${noLine}<c:crossAx val="50010"/><c:crosses val="${o.dir==="bar"?"max":"autoZero"}"/><c:crossBetween val="between"/></c:valAx></c:plotArea>
+<c:legend><c:legendPos val="b"/><c:overlay val="0"/></c:legend><c:plotVisOnly val="1"/><c:dispBlanksAs val="gap"/></c:chart><c:spPr><a:solidFill><a:srgbClr val="FFFFFF"/></a:solidFill><a:ln w="9525"><a:solidFill><a:srgbClr val="D9D9D9"/></a:solidFill></a:ln></c:spPr><c:txPr><a:bodyPr/><a:lstStyle/><a:p><a:pPr><a:defRPr sz="1000"><a:solidFill><a:srgbClr val="404040"/></a:solidFill><a:latin typeface="Yu Gothic"/><a:ea typeface="游ゴシック"/></a:defRPr></a:pPr><a:endParaRPr lang="ja-JP"/></a:p></c:txPr></c:chartSpace>`;
+}
+
+/* グラフ画像（PNG） */
+function chartPNG(o){
+  // o: {title, cats[], series:[{name,color,vals}], stacked, fmt:(v)=>string, yLabel}
+  const W=1280,H=760,cv=document.createElement("canvas");cv.width=W;cv.height=H;const g=cv.getContext("2d");
+  const F='"Hiragino Sans","Yu Gothic","Meiryo","Noto Sans JP",sans-serif';
+  g.fillStyle="#FFFFFF";g.fillRect(0,0,W,H);
+  g.fillStyle="#231B24";g.font=`bold 34px ${F}`;g.textBaseline="top";g.fillText(o.title,40,30);
+  if(o.sub){g.fillStyle="#6C6270";g.font=`22px ${F}`;g.fillText(o.sub,40,76)}
+  const L=110,R=W-40,T=130,B=H-120;
+  // legend
+  let lx=L;g.font=`24px ${F}`;g.textBaseline="middle";
+  o.series.forEach(s=>{g.fillStyle="#"+s.color;g.fillRect(lx,H-52,22,22);g.fillStyle="#231B24";g.fillText(s.name,lx+30,H-41);lx+=g.measureText(s.name).width+70});
+  const n=o.cats.length,m=o.series.length;
+  let max;
+  if(o.stacked)max=1;else{max=Math.max(1,...o.series.flatMap(s=>s.vals.filter(Number.isFinite)));const p=Math.pow(10,Math.floor(Math.log10(max)));const step=[1,2,2.5,5,10].map(k=>k*p/2).find(st=>max/st<=6)||p;max=Math.ceil(max/step)*step;o._step=step}
+  const step=o.stacked?.2:o._step;
+  const y=v=>B-(v/max)*(B-T);
+  g.font=`22px ${F}`;g.textAlign="right";
+  for(let v=0;v<=max+1e-9;v+=step){g.strokeStyle=v===0?"#8C8C8C":"#E0E0E0";g.lineWidth=v===0?2:1;g.beginPath();g.moveTo(L,y(v));g.lineTo(R,y(v));g.stroke();g.fillStyle="#6C6270";g.fillText(o.stacked?Math.round(v*100)+"%":(o.axisFmt||String)(Math.round(v*100)/100),L-12,y(v))}
+  if(o.yLabel){g.save();g.translate(28,(T+B)/2);g.rotate(-Math.PI/2);g.textAlign="center";g.fillStyle="#6C6270";g.fillText(o.yLabel,0,0);g.restore()}
+  const band=(R-L)/n;
+  g.textAlign="center";
+  o.cats.forEach((c,i)=>{
+    const cx=L+band*i+band/2;
+    g.fillStyle="#231B24";g.font=`bold 24px ${F}`;g.textBaseline="top";g.fillText(c,cx,B+12);
+    if(o.stacked){
+      const tot=o.series.reduce((a,s)=>a+(s.vals[i]||0),0);const bw=Math.min(band*.55,160);let acc=0;
+      o.series.forEach(s=>{const v=tot?(s.vals[i]||0)/tot:0;if(!v)return;const y0=y(acc),y1=y(acc+v);g.fillStyle="#"+s.color;g.fillRect(cx-bw/2,y1,bw,y0-y1);
+        if(y0-y1>26){g.fillStyle="#FFFFFF";g.font=`bold 20px ${F}`;g.textBaseline="middle";g.fillText(Math.round(v*1000)/10+"%",cx,(y0+y1)/2)}acc+=v});
+    }else{
+      const gw=band*.78,bw=gw/m;
+      o.series.forEach((s,j)=>{const v=s.vals[i];if(!Number.isFinite(v))return;const bx=cx-gw/2+bw*j;g.fillStyle="#"+s.color;g.fillRect(bx+2,y(v),bw-4,B-y(v));
+        g.fillStyle="#231B24";g.font=`20px ${F}`;g.textBaseline="bottom";g.fillText((o.fmt||String)(v),bx+bw/2,y(v)-4)});
+    }
+  });
+  return cv.toDataURL("image/png").split(",")[1];
+}
+
+function buildWorkbook(t){
+  const r1=v=>Number.isFinite(v)?Math.round(v*10)/10:"";
+  const plots=t.plots,np=plots.length,ctl=control(t);
+  const st=Object.fromEntries(plots.map(p=>[p.id,plotStats(t,p.id)]));
+  const sheets=[];
+
+  // 1 試験情報
+  const s1=new XSheet("試験情報");s1.first=true;sheets.push(s1);
+  s1.set(1,1,"かんしょ 試験調査票",ST.title);s1.set(2,1,"作成："+jd(today()),ST.note);
+  const info=[["試験名",t.name],["植付日",jd(t.plantDate)],["収穫日",jd(t.harvestDate)],["調査日",jd(t.date)],["場所（ほ場）",t.place],["品種",t.variety],["掘り取り株数（1区）",Number(t.hills)||""],["10a当たり植付株数",Number(t.hills10a)||""],["備考",t.note]];
+  let r=4;const cellOf={};
+  info.forEach(([k,v])=>{s1.set(r,1,k,ST.hdL);s1.set(r,2,v,typeof v==="number"?ST.gen:ST.txt);s1.merge(r,2,r,6,ST.txt);cellOf[k]=`${XL.q("試験情報")}!$B$${r}`;r++});
+  r++;s1.set(r,1,"処理区と使用薬剤",ST.bold);r++;
+  ["処理区","区分","薬剤名","処理量","処理日","処理方法"].forEach((h,i)=>s1.set(r,i+1,h,ST.hd));r++;
+  plots.forEach(p=>{const cs=chemList(p);const rows=cs.length?cs:[{name:"",rate:"",date:"",method:""}];const r0=r;
+    rows.forEach(c=>{s1.set(r,3,c.name,ST.txt);s1.set(r,4,c.rate,ST.txt);s1.set(r,5,jd(c.date),ST.txtC);s1.set(r,6,c.method,ST.txt);r++});
+    s1.set(r0,1,p.name,ST.txt);s1.set(r0,2,p.role==="control"?"対照区":"試験区",ST.txtC);
+    if(rows.length>1){s1.merge(r0,1,r-1,1,ST.txt);s1.merge(r0,2,r-1,2,ST.txtC)}});
+  Object.assign(s1.widths,{1:22,2:12,3:24,4:14,5:12,6:34});
+  const HILLS=cellOf["掘り取り株数（1区）"],H10=cellOf["10a当たり植付株数"];
+
+  // 2 重量データ
+  const s2=new XSheet("重量データ");sheets.push(s2);s2.freeze=2;
+  s2.set(1,1,"No",ST.hd);s2.merge(1,1,2,1,ST.hd);s2.widths[1]=6;
+  const cols=plots.map(p=>t.weights.filter(w=>w.plot===p.id));
+  const maxLen=Math.max(0,...cols.map(c=>c.length));
+  const wCol=i=>2+3*i;
+  plots.forEach((p,i)=>{const c=wCol(i);s2.set(1,c,p.name,ST.hd);s2.merge(1,c,1,c+2,ST.hd);s2.set(2,c,"重量(g)",ST.hd);s2.set(2,c+1,"株",ST.hd);s2.set(2,c+2,"規格",ST.hd);Object.assign(s2.widths,{[c]:10,[c+1]:6,[c+2]:8})});
+  for(let k=0;k<maxLen;k++){const rr=3+k;s2.set(rr,1,k+1,ST.txtC);
+    cols.forEach((col,i)=>{const w=col[k];const c=wCol(i);const L=XL.col(c);
+      if(w){s2.set(rr,c,w.g,ST.gen);s2.set(rr,c+1,w.hill||"",ST.txtC)}else{s2.set(rr,c,null,ST.gen);s2.set(rr,c+1,null,ST.txtC)}
+      s2.fx(rr,c+2,`IF(${L}${rr}="","",LOOKUP(${L}${rr},{0,50,100,200,350,500,700},{"区分外","2S","S","M","L","2L","3L"}))`,w?gradeOf(w.g):"",ST.txtC)})}
+  const WR=i=>`${XL.q("重量データ")}!$${XL.col(wCol(i))}:$${XL.col(wCol(i))}`;
+
+  // 3 規格集計
+  const s3=new XSheet("規格集計");sheets.push(s3);
+  s3.set(1,1,"形量区分（等級）別 集計",ST.title);
+  s3.set(2,1,`掘り取り ${t.hills}株／区。重量の境界値は上の規格に含みます（50g→2S、700g→3L）。本数は「重量データ」シートから自動計算されます。`,ST.note);
+  s3.set(4,1,"等級",ST.hd);s3.merge(4,1,5,1,ST.hd);s3.set(4,2,"重量範囲",ST.hd);s3.merge(4,2,5,2,ST.hd);
+  const gc=i=>3+3*i;
+  plots.forEach((p,i)=>{const c=gc(i);s3.set(4,c,p.name,ST.hd);s3.merge(4,c,4,c+2,ST.hd);s3.set(5,c,"本数",ST.hd);s3.set(5,c+1,"比率",ST.hd);s3.set(5,c+2,"重量(g)",ST.hd);Object.assign(s3.widths,{[c]:9,[c+1]:9,[c+2]:11})});
+  Object.assign(s3.widths,{1:16,2:12});
+  GRADES_DESC.forEach((gx,k)=>{const rr=6+k;s3.set(rr,1,gx.k,ST.txtC);s3.set(rr,2,gx.label,ST.txtC);
+    plots.forEach((p,i)=>{const c=gc(i),W=WR(i),b=st[p.id].byG[gx.k],n=st[p.id].n;
+      const crit=gx.max===Infinity?`${W},">=${gx.min}"`:`${W},">=${gx.min}",${W},"<${gx.max}"`;
+      s3.fx(rr,c,`COUNTIFS(${crit})`,b.n,ST.int);
+      s3.fx(rr,c+1,`IF(${XL.ref(13,c,true)}=0,"",${XL.ref(rr,c)}/${XL.ref(13,c,true)})`,n?b.n/n:"",ST.pct);
+      s3.fx(rr,c+2,`SUMIFS(${W},${crit})`,b.g,ST.int)})});
+  s3.set(13,1,"計",ST.totL);s3.set(13,2,null,ST.totL);
+  plots.forEach((p,i)=>{const c=gc(i),s=st[p.id];const L=XL.col(c),L2=XL.col(c+2),Lr=XL.col(c+1);
+    s3.fx(13,c,`SUM(${L}6:${L}12)`,s.n,ST.totI);s3.fx(13,c+1,`IF(${L}13=0,"",SUM(${Lr}6:${Lr}12))`,s.n?1:"",ST.totP);s3.fx(13,c+2,`SUM(${L2}6:${L2}12)`,s.sum,ST.totI)});
+  // 統計
+  s3.set(15,1,"項目",ST.hd);s3.set(15,2,"単位",ST.hd);plots.forEach((p,i)=>s3.set(15,3+i,p.name,ST.hd));
+  const nRef=i=>XL.ref(13,gc(i),true),sumRef=i=>XL.ref(13,gc(i)+2,true);
+  const stRows=[
+    ["総本数","本",i=>`${nRef(i)}`,"n",ST.int],
+    ["総重量","g",i=>`${sumRef(i)}`,"sum",ST.int],
+    ["平均一本重","g",i=>`IF(${nRef(i)}=0,"",AVERAGE(${WR(i)}))`,"mean",ST.dec],
+    ["標準偏差","g",i=>`IF(${nRef(i)}=0,"",_xlfn.STDEV.P(${WR(i)}))`,"sd",ST.dec],
+    ["1株当たり本数","本",i=>`IF(N(${HILLS})=0,"",${nRef(i)}/${HILLS})`,"perHillN",ST.dec],
+    ["1株当たり重量","g",i=>`IF(N(${HILLS})=0,"",${sumRef(i)}/${HILLS})`,"perHillG",ST.dec],
+    ["10a換算収量","kg/10a",i=>`IF(OR(N(${HILLS})=0,N(${H10})=0),"",${sumRef(i)}/${HILLS}*${H10}/1000)`,"per10a",ST.dec],
+  ];
+  stRows.forEach(([lb,u,f,key,sty],k)=>{const rr=16+k;s3.set(rr,1,lb,ST.txt);s3.set(rr,2,u,ST.txtC);plots.forEach((p,i)=>{const v=st[p.id][key];s3.fx(rr,3+i,f(i),Number.isFinite(v)?v:"",sty)})});
+  let rr3=24;
+  if(ctl&&np>1){
+    const ci=plots.indexOf(ctl);
+    s3.set(rr3,1,`対照区比（${ctl.name}＝100）`,ST.hdL);s3.set(rr3,2,null,ST.hd);plots.forEach((p,i)=>s3.set(rr3,3+i,p.name,ST.hd));rr3++;
+    const mUp=(i)=>`SUM(${XL.ref(6,gc(i),true)}:${XL.ref(9,gc(i),true)})`;
+    [["本数",i=>`${XL.ref(16,3+i,true)}`],["総重量",i=>`${XL.ref(17,3+i,true)}`],["平均一本重",i=>`${XL.ref(18,3+i,true)}`],["M以上 本数",mUp]].forEach(([lb,ref])=>{
+      s3.set(rr3,1,lb,ST.txt);s3.set(rr3,2,null,ST.txt);
+      plots.forEach((p,i)=>{const a=lb==="M以上 本数"?largeN(st[p.id]):st[p.id][{本数:"n",総重量:"sum",平均一本重:"mean"}[lb]];const b=lb==="M以上 本数"?largeN(st[ctl.id]):st[ctl.id][{本数:"n",総重量:"sum",平均一本重:"mean"}[lb]];
+        s3.fx(rr3,3+i,`IFERROR(${ref(i)}/${ref(ci)}*100,"")`,Number.isFinite(a/b)&&b?a/b*100:"",ST.dec)});rr3++});
+  }
+  // 規格集計のExcelグラフ
+  const catRef=`${XL.q("規格集計")}!$A$6:$A$12`,cats=GRADES_DESC.map(g=>g.k);
+  const cc=gc(np)+1; // グラフを置く列
+  s3.charts.push({from:[cc,3],to:[cc+9,21],xml:chartXml({title:"規格別本数",dir:"col",grouping:"clustered",labels:true,yTitle:"本数",cats:{ref:catRef,vals:cats},
+    series:plots.map((p,i)=>({nameRef:`${XL.q("規格集計")}!${XL.ref(4,gc(i),true)}`,name:p.name,ref:`${XL.q("規格集計")}!${XL.ref(6,gc(i),true)}:${XL.ref(12,gc(i),true)}`,vals:GRADES_DESC.map(g=>st[p.id].byG[g.k].n),color:PLOT_HEX[i%5]}))})});
+  s3.charts.push({from:[cc,22],to:[cc+9,40],xml:chartXml({title:"規格別比率",dir:"col",grouping:"clustered",labels:true,lblFmt:"0%",fmt:"0%",yTitle:"比率",cats:{ref:catRef,vals:cats},
+    series:plots.map((p,i)=>({nameRef:`${XL.q("規格集計")}!${XL.ref(4,gc(i),true)}`,name:p.name,ref:`${XL.q("規格集計")}!${XL.ref(6,gc(i)+1,true)}:${XL.ref(12,gc(i)+1,true)}`,vals:GRADES_DESC.map(g=>st[p.id].n?st[p.id].byG[g.k].n/st[p.id].n:NaN),color:PLOT_HEX[i%5]}))})});
+
+  // 4 被害度
+  const s4=new XSheet("被害度");sheets.push(s4);
+  s4.set(1,1,"被害度調査",ST.title);
+  s4.set(2,1,"被害度（0〜100）＝（微×1＋小×2＋中×3＋多×4）÷（調査芋数×4）×100　／　防除価＝100－（試験区の被害度÷対照区の被害度）×100",ST.note);
+  Object.assign(s4.widths,{1:20,2:7,3:7,4:7,5:7,6:7,7:10,8:10,9:10});
+  let r4=4;const idxCell={};const dmgVals={};
+  PESTS.forEach(pe=>{
+    s4.set(r4,1,pe.name,ST.bold);r4++;
+    ["処理区",...DMG_LV,"調査芋数","被害度","防除価"].forEach((h,i)=>s4.set(r4,i+1,h,ST.hd));r4++;
+    const ctlRow=ctl?r4+plots.indexOf(ctl):null;
+    plots.forEach((p,i)=>{const a=((t.damage[pe.id]||{})[p.id]||[0,0,0,0,0]).map(v=>+v||0);const d=dmgIndex(a);
+      s4.set(r4,1,p.name,ST.txt);a.forEach((v,j)=>s4.set(r4,2+j,v,ST.int));
+      s4.fx(r4,7,`SUM(B${r4}:F${r4})`,d.n,ST.int);
+      s4.fx(r4,8,`IF(G${r4}=0,"",(C${r4}+D${r4}*2+E${r4}*3+F${r4}*4)/4/G${r4}*100)`,Number.isFinite(d.idx)?d.idx:"",ST.dec);
+      const cd=ctl?dmgIndex((t.damage[pe.id]||{})[ctl.id]).idx:NaN;
+      if(ctl&&p!==ctl)s4.fx(r4,9,`IFERROR(IF(OR(H${r4}="",H${ctlRow}=0),"",(1-H${r4}/H${ctlRow})*100),"")`,Number.isFinite(d.idx)&&cd>0?(1-d.idx/cd)*100:"",ST.dec);else s4.set(r4,9,"－",ST.txtC);
+      idxCell[pe.id+p.id]=`H${r4}`;(dmgVals[pe.id]=dmgVals[pe.id]||{})[p.id]=d.idx;r4++});
+    r4+=2;
+  });
+  // まとめ表
+  s4.set(r4,1,"被害度まとめ",ST.bold);r4++;const sumHead=r4;
+  s4.set(r4,1,"処理区",ST.hd);PESTS.forEach((pe,j)=>s4.set(r4,2+j,pe.name,ST.hd));r4++;
+  const sumRow0=r4;
+  plots.forEach(p=>{s4.set(r4,1,p.name,ST.txt);PESTS.forEach((pe,j)=>{const v=dmgVals[pe.id][p.id];s4.fx(r4,2+j,`IF(${idxCell[pe.id+p.id]}="","",${idxCell[pe.id+p.id]})`,Number.isFinite(v)?v:"",ST.dec)});r4++});
+  s4.widths[2]=12;s4.widths[3]=12;
+  s4.charts.push({from:[11,3],to:[19,21],xml:chartXml({title:"被害度（0〜100）",dir:"col",grouping:"clustered",labels:true,lblFmt:"0.0",yTitle:"被害度",
+    cats:{ref:`${XL.q("被害度")}!$B$${sumHead}:$${XL.col(1+PESTS.length)}$${sumHead}`,vals:PESTS.map(p=>p.name)},
+    series:plots.map((p,i)=>({nameRef:`${XL.q("被害度")}!$A$${sumRow0+i}`,name:p.name,ref:`${XL.q("被害度")}!$B$${sumRow0+i}:$${XL.col(1+PESTS.length)}$${sumRow0+i}`,vals:PESTS.map(pe=>dmgVals[pe.id][p.id]),color:PLOT_HEX[i%5]}))})});
+
+  // 5 品質区分
+  const s5=new XSheet("品質区分");sheets.push(s5);
+  s5.set(1,1,"品質区分",ST.title);
+  Object.assign(s5.widths,{1:20,2:9,3:9,4:9,5:9,6:9});
+  s5.set(3,1,"処理区",ST.hd);QUAL.forEach((q,j)=>s5.set(3,2+j,q,ST.hd));s5.set(3,6,"計",ST.hd);
+  const qv={};
+  plots.forEach((p,i)=>{const rr=4+i;const a=(t.quality[p.id]||[0,0,0,0]).map(v=>+v||0);qv[p.id]=a;s5.set(rr,1,p.name,ST.txt);a.forEach((v,j)=>s5.set(rr,2+j,v,ST.int));s5.fx(rr,6,`SUM(B${rr}:E${rr})`,a.reduce((x,y)=>x+y,0),ST.totI)});
+  const q0=4+np+2;s5.set(q0-1,1,"各品質区分比率",ST.bold);
+  s5.set(q0,1,"処理区",ST.hd);QUAL.forEach((q,j)=>s5.set(q0,2+j,q,ST.hd));s5.set(q0,6,"計",ST.hd);
+  plots.forEach((p,i)=>{const rr=q0+1+i,src=4+i;const a=qv[p.id],n=a.reduce((x,y)=>x+y,0);s5.set(rr,1,p.name,ST.txt);
+    QUAL.forEach((q,j)=>{const L=XL.col(2+j);s5.fx(rr,2+j,`IF($F${src}=0,"",${L}${src}/$F${src})`,n?a[j]/n:"",ST.pct)});s5.fx(rr,6,`IF($F${src}=0,"",SUM(B${rr}:E${rr}))`,n?1:"",ST.totP)});
+  s5.charts.push({from:[8,2],to:[16,20],xml:chartXml({title:"品質区分の割合",dir:"bar",grouping:"percentStacked",labels:true,fmt:"0%",
+    cats:{ref:`${XL.q("品質区分")}!$A$4:$A$${3+np}`,vals:plots.map(p=>p.name)},
+    series:QUAL.map((q,j)=>({nameRef:`${XL.q("品質区分")}!$${XL.col(2+j)}$3`,name:q,ref:`${XL.q("品質区分")}!$${XL.col(2+j)}$4:$${XL.col(2+j)}$${3+np}`,vals:plots.map(p=>qv[p.id][j]),color:QUAL_HEX[j]}))})});
+
+  // 6 グラフ（画像）
+  const s6=new XSheet("グラフ（画像）");sheets.push(s6);
+  s6.set(1,1,"グラフ（画像）",ST.title);s6.set(2,1,"報告書などに貼り付けやすい画像です。数値を修正しても画像は変わりません（各シートのグラフは数値に合わせて変わります）。",ST.note);
+  const sub=`${t.name||""}　${t.date?"調査日 "+jd(t.date):""}`;
+  const imgs=[
+    chartPNG({title:"規格別本数",sub,cats,series:plots.map((p,i)=>({name:p.name,color:PLOT_HEX[i%5],vals:GRADES_DESC.map(g=>st[p.id].byG[g.k].n)})),yLabel:"本数"}),
+    chartPNG({title:"規格別比率",sub,cats,series:plots.map((p,i)=>({name:p.name,color:PLOT_HEX[i%5],vals:GRADES_DESC.map(g=>st[p.id].n?st[p.id].byG[g.k].n/st[p.id].n*100:NaN)})),fmt:v=>v.toFixed(1),axisFmt:v=>v+"%",yLabel:"比率（%）"}),
+    chartPNG({title:"被害度（0〜100）",sub,cats:PESTS.map(p=>p.name),series:plots.map((p,i)=>({name:p.name,color:PLOT_HEX[i%5],vals:PESTS.map(pe=>dmgVals[pe.id][p.id])})),fmt:v=>v.toFixed(1),yLabel:"被害度"}),
+    chartPNG({title:"品質区分の割合",sub,cats:plots.map(p=>p.name),stacked:true,series:QUAL.map((q,j)=>({name:q,color:QUAL_HEX[j],vals:plots.map(p=>qv[p.id][j])}))}),
+  ];
+  imgs.forEach((b64,k)=>s6.images.push({b64,col:1,row:4+k*21,w:640,h:380}));
+  s6.widths[1]=12;
+  return sheets;
+}
+
+async function writeXlsx(sheets){
+  const zip=new JSZip();
+  const ct=[`<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>`,`<Default Extension="xml" ContentType="application/xml"/>`,`<Default Extension="png" ContentType="image/png"/>`,
+    `<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>`,`<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>`];
+  zip.file("_rels/.rels",`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`);
+  zip.file("xl/styles.xml",XL_STYLES);
+  let chartN=0,imgN=0,drawN=0;
+  const wbRels=[];
+  sheets.forEach((sh,si)=>{
+    const n=si+1;let drawRid=null;
+    if(sh.charts.length||sh.images.length){
+      drawN++;drawRid="rId1";
+      zip.file(`xl/worksheets/_rels/sheet${n}.xml.rels`,`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing" Target="../drawings/drawing${drawN}.xml"/></Relationships>`);
+      const rels=[];let anchors="";let id=2;
+      sh.charts.forEach(ch=>{chartN++;const rid="rId"+(rels.length+1);rels.push(`<Relationship Id="${rid}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart" Target="../charts/chart${chartN}.xml"/>`);
+        zip.file(`xl/charts/chart${chartN}.xml`,ch.xml);ct.push(`<Override PartName="/xl/charts/chart${chartN}.xml" ContentType="application/vnd.openxmlformats-officedocument.drawingml.chart+xml"/>`);
+        anchors+=`<xdr:twoCellAnchor editAs="oneCell"><xdr:from><xdr:col>${ch.from[0]-1}</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>${ch.from[1]-1}</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:from><xdr:to><xdr:col>${ch.to[0]-1}</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>${ch.to[1]-1}</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:to><xdr:graphicFrame macro=""><xdr:nvGraphicFramePr><xdr:cNvPr id="${id++}" name="グラフ ${chartN}"/><xdr:cNvGraphicFramePr/></xdr:nvGraphicFramePr><xdr:xfrm><a:off x="0" y="0"/><a:ext cx="0" cy="0"/></xdr:xfrm><a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/chart"><c:chart xmlns:c="http://schemas.openxmlformats.org/drawingml/2006/chart" r:id="${rid}"/></a:graphicData></a:graphic></xdr:graphicFrame><xdr:clientData/></xdr:twoCellAnchor>`});
+      sh.images.forEach(im=>{imgN++;const rid="rId"+(rels.length+1);rels.push(`<Relationship Id="${rid}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="../media/image${imgN}.png"/>`);
+        zip.file(`xl/media/image${imgN}.png`,im.b64,{base64:true});const cx=im.w*9525,cy=im.h*9525;
+        anchors+=`<xdr:oneCellAnchor><xdr:from><xdr:col>${im.col-1}</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>${im.row-1}</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:from><xdr:ext cx="${cx}" cy="${cy}"/><xdr:pic><xdr:nvPicPr><xdr:cNvPr id="${id++}" name="図 ${imgN}"/><xdr:cNvPicPr><a:picLocks noChangeAspect="1"/></xdr:cNvPicPr></xdr:nvPicPr><xdr:blipFill><a:blip r:embed="${rid}"/><a:stretch><a:fillRect/></a:stretch></xdr:blipFill><xdr:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${cx}" cy="${cy}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></xdr:spPr></xdr:pic><xdr:clientData/></xdr:oneCellAnchor>`});
+      zip.file(`xl/drawings/drawing${drawN}.xml`,`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<xdr:wsDr xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">${anchors}</xdr:wsDr>`);
+      zip.file(`xl/drawings/_rels/drawing${drawN}.xml.rels`,`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${rels.join("")}</Relationships>`);
+      ct.push(`<Override PartName="/xl/drawings/drawing${drawN}.xml" ContentType="application/vnd.openxmlformats-officedocument.drawing+xml"/>`);
+    }
+    zip.file(`xl/worksheets/sheet${n}.xml`,sh.xml(drawRid));
+    ct.push(`<Override PartName="/xl/worksheets/sheet${n}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`);
+    wbRels.push(`<Relationship Id="rId${n}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${n}.xml"/>`);
+  });
+  wbRels.push(`<Relationship Id="rId${sheets.length+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>`);
+  zip.file("xl/_rels/workbook.xml.rels",`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${wbRels.join("")}</Relationships>`);
+  zip.file("xl/workbook.xml",`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<workbook ${XL.ns}><bookViews><workbookView activeTab="0"/></bookViews><sheets>${sheets.map((s,i)=>`<sheet name="${XL.x(s.name)}" sheetId="${i+1}" r:id="rId${i+1}"/>`).join("")}</sheets><calcPr calcId="191029" fullCalcOnLoad="1"/></workbook>`);
+  zip.file("[Content_Types].xml",`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">${ct.join("")}</Types>`);
+  return zip.generateAsync({type:"blob",mimeType:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+}
+
+async function exportXlsx(){
+  const t=T();
+  if(typeof JSZip==="undefined"){toast("Excel機能を読み込めませんでした（通信を確認してください）");return}
+  let blob;
+  try{blob=await writeXlsx(buildWorkbook(t))}catch(e){console.error(e);toast("Excelファイルを作れませんでした");return}
+  window.__lastXlsx=blob;
+  const fname=`かんしょ調査_${(t.name||"試験").replace(/[\\/:*?"<>|]/g,"_")}_${(t.date||"").replace(/-/g,"")}.xlsx`;
+  let dl=null;try{dl=await window.claude?.use?.("downloads")}catch(e){}
+  if(!dl){ // パソコンで直接開いた場合など：通常のダウンロード
+    try{const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=fname;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},2000);toast("Excelファイルを保存しました")}
+    catch(e){toast("この画面ではファイル保存が使えません。「表をコピー」をお使いください")}
+    return}
+  try{await dl.save({filename:fname,data:blob});toast("Excelファイルを保存しました")}
+  catch(e){toast(e&&e.code==="declined"?"保存を取り消しました":"保存できませんでした")}
+}
+
+render();
+})();
+</script>
+
+</body></html>
